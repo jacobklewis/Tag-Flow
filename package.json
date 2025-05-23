@@ -1,0 +1,37 @@
+{
+  "name": "tag-flow",
+  "version": "0.0.2",
+  "description": "A Simple and Resilient HTML Parser",
+  "main": "index.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "jest",
+    "build": "tsc",
+    "build:run": "npm run build && node dist/htmlParser.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jacobklewis/Tag-Flow.git"
+  },
+  "keywords": [
+    "html",
+    "parser",
+    "framework",
+    "xml"
+  ],
+  "author": "Jacob K Lewis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jacobklewis/Tag-Flow/issues"
+  },
+  "homepage": "https://github.com/jacobklewis/Tag-Flow#readme",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.3.4",
+    "typescript": "^5.8.3"
+  }
+}
