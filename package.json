@@ -1,6 +1,6 @@
 {
   "name": "tag-flow",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A Simple and Resilient HTML Parser",
   "main": "index.js",
   "files": [
