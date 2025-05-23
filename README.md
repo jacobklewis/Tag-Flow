@@ -21,9 +21,9 @@ npm install tag-flow
 Parse an HTML string:
 
 ```typescript
-import { parseHTML } from 'tag-flow'
+import { flow } from 'tag-flow'
 const htmlContent = '<div><p>Hello, World!</p></div>';
-const parsed = parseHTML(htmlContent);
+const parsed = flow(htmlContent);
 console.log(parsed);
 ```
 

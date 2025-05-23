@@ -8,7 +8,7 @@ import {
   TFText,
 } from "./elements";
 
-export const parseHTML = (html: string): ParsingResponse => {
+export const flow = (html: string): ParsingResponse => {
   //   console.log("Parsing HTML:", html);
   // parse the html string and return an array of HTMLTag objects
   html = html.trim();
@@ -116,7 +116,7 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
     buffer.status = BufferStatus.INNER_HTML;
     const res = parseNameAndAttr(buffer.buffer.trim());
     const remainingString = html.slice(i + 1);
-    const innerResult = parseHTML(remainingString);
+    const innerResult = flow(remainingString);
     // console.log("Inner result:", innerResult);
     i = innerResult.endingIndex + i;
     // console.log("i:", i);

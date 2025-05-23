@@ -1,4 +1,4 @@
-export { parseHTML, ParsingResponse } from "./htmlParser";
+export { flow, ParsingResponse } from "./htmlParser";
 export {
   TFElement,
   TFElementType,
