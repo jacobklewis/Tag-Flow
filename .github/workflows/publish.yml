@@ -2,9 +2,8 @@ name: Node.js CI
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+    tags:
+      - "v*" # Runs when tags like 'v1.0.0' are pushed
 permissions:
   id-token: write
 jobs:
