@@ -1,7 +1,7 @@
 {
   "name": "tag-flow",
-  "version": "0.0.3",
-  "description": "A Simple and Resilient HTML Parser",
+  "version": "0.1.0",
+  "description": "A Simple and Resilient HTML/XML Parser",
   "main": "index.js",
   "files": [
     "dist",

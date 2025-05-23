@@ -6,9 +6,22 @@ import {
   TFElementType,
   TFTag,
   TFText,
+  VoidTags,
 } from "./elements";
+import { readFileSync } from "fs";
+import { FlowGuide } from "./flowGuide";
 
-export const flow = (html: string): ParsingResponse => {
+export const flowFile = (src: string): FlowGuide => {
+  const html = readFileSync(src, "utf-8");
+  const result = flow(html);
+  return result;
+};
+
+export const flow = (html: string): FlowGuide => {
+  return new FlowGuide(flowRaw(html).elements);
+};
+
+export const flowRaw = (html: string): ParsingResponse => {
   //   console.log("Parsing HTML:", html);
   // parse the html string and return an array of HTMLTag objects
   html = html.trim();
@@ -116,7 +129,7 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
     buffer.status = BufferStatus.INNER_HTML;
     const res = parseNameAndAttr(buffer.buffer.trim());
     const remainingString = html.slice(i + 1);
-    const innerResult = flow(remainingString);
+    const innerResult = flowRaw(remainingString);
     // console.log("Inner result:", innerResult);
     i = innerResult.endingIndex + i;
     // console.log("i:", i);
@@ -127,10 +140,23 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
       innerTags: innerResult.elements,
     } as TFTag;
     buffer.buffer = "";
+    // Check for void tags
+    if (VoidTags.includes(res.name.toLowerCase())) {
+      (buffer.currentElement as TFTag).isVoidTag = true;
+      elements.push(buffer.currentElement);
+      buffer.currentElement = null;
+      buffer.status = BufferStatus.START;
+    }
     // console.log("Buffer Status:", buffer.status);
   } else if (buffer.status === BufferStatus.TAG_COMPLETE) {
     buffer.status = BufferStatus.START;
     if (buffer.currentElement) {
+      if (
+        buffer.currentElement.type === TFElementType.TAG &&
+        (buffer.currentElement as TFTag).isVoidTag !== true
+      ) {
+        (buffer.currentElement as TFTag).isVoidTag = false;
+      }
       elements.push(buffer.currentElement);
     }
     buffer.currentElement = null;
@@ -165,6 +191,7 @@ function handleForwardSlash(req: HandlerRequest): HandlerResponse {
       name: res.name,
       attributes: res.attributes,
       innerTags: [],
+      isVoidTag: true,
     } as TFTag;
     buffer.buffer = "";
   } else if (buffer.status === BufferStatus.TAG_CLOSE) {

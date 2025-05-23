@@ -1,4 +1,4 @@
-export { flow, ParsingResponse } from "./htmlParser";
+export { flow, flowFile, ParsingResponse } from "./htmlParser";
 export {
   TFElement,
   TFElementType,
@@ -7,3 +7,4 @@ export {
   TFComment,
   TFDocType,
 } from "./elements";
+export { FlowGuide } from "./flowGuide";

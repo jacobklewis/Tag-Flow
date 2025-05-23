@@ -8,6 +8,7 @@ export interface TFTag extends TFElement {
   name: string;
   attributes: { [key: string]: string };
   innerTags: TFElement[];
+  isVoidTag: boolean;
 }
 export interface TFComment extends TFElement {
   comment: string;
@@ -22,3 +23,20 @@ export const TFElementType = {
   COMMENT: "comment",
   DOCTYPE: "doctype",
 };
+
+export const VoidTags = [
+  "area",
+  "base",
+  "br",
+  "col",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "meta",
+  "link",
+  "param",
+  "source",
+  "track",
+  "wbr",
+];

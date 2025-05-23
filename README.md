@@ -22,9 +22,12 @@ Parse an HTML string:
 
 ```typescript
 import { flow } from 'tag-flow'
-const htmlContent = '<div><p>Hello, World!</p></div>';
+const htmlContent = '<div><h1>Hello</h1> World!</div>';
 const parsed = flow(htmlContent);
-console.log(parsed);
+console.log(parsed.q("h1"))
+```
+```bash
+<h1>Hello</h1>
 ```
 
 ## Download and Modify
