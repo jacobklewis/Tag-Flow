@@ -1,5 +1,4 @@
-import { TFComment, TFDocType, TFElement, TFTag, TFText } from "./elements";
-import { ParsingResponse } from "./htmlParser";
+import { TFComment, TFDocType, TFElement, TFTag, TFText } from "./elements.js";
 
 export class FlowGuide {
   public constructor(private elements: TFElement[]) {}

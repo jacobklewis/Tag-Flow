@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "A Simple and Resilient HTML/XML Parser",
   "main": "index.js",
+  "type": "module",
   "files": [
     "dist",
     "README.md"

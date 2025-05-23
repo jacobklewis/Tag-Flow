@@ -1,4 +1,4 @@
-export { flow, flowFile, ParsingResponse } from "./htmlParser";
+export { flow, flowFile, ParsingResponse } from "./htmlParser.js";
 export {
   TFElement,
   TFElementType,
@@ -6,5 +6,11 @@ export {
   TFText,
   TFComment,
   TFDocType,
-} from "./elements";
-export { FlowGuide } from "./flowGuide";
+} from "./elements.js";
+export { FlowGuide } from "./flowGuide.js";
+
+import { flow } from "./htmlParser.js";
+
+const htmlContent = "<div><h1>Hello</h1> World!</div>";
+const parsed = flow(htmlContent);
+console.log(parsed.q("h1").html);

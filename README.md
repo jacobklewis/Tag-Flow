@@ -23,12 +23,31 @@ Parse an HTML string:
 ```typescript
 import { flow } from 'tag-flow'
 const htmlContent = '<div><h1>Hello</h1> World!</div>';
-const parsed = flow(htmlContent);
-console.log(parsed.q("h1"))
+const fl = flow(htmlContent);
+console.log(fl.q("h1").html)
 ```
-```bash
+```html
 <h1>Hello</h1>
 ```
+
+Search by:
+* Tag name
+  ```ts
+  fl.q("div")
+  ```
+* Class
+  ```ts
+  fl.q(".className")
+  ```
+* ID
+  ```ts
+  fl.q("#myId")
+  ```
+* Inner HTML
+  ```ts
+  // Returns tags containing this text
+  fl.q("*Hello")
+  ```
 
 ## Download and Modify
 

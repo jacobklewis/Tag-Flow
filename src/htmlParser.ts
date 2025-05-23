@@ -1,4 +1,4 @@
-import { BufferState, BufferStatus } from "./buffer";
+import { BufferState, BufferStatus } from "./buffer.js";
 import {
   TFComment,
   TFDocType,
@@ -7,9 +7,9 @@ import {
   TFTag,
   TFText,
   VoidTags,
-} from "./elements";
+} from "./elements.js";
 import { readFileSync } from "fs";
-import { FlowGuide } from "./flowGuide";
+import { FlowGuide } from "./flowGuide.js";
 
 export const flowFile = (src: string): FlowGuide => {
   const html = readFileSync(src, "utf-8");
