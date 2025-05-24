@@ -1,5 +1,6 @@
 export interface TFElement {
   type: string;
+  address: number[]; // The address of the element in the HTML string given by a list of indexes: [0,1,5,0,...]
 }
 export interface TFText extends TFElement {
   text: string;

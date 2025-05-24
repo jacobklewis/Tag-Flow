@@ -6,6 +6,7 @@ import {
   TFText,
   TFComment,
 } from "../src/elements";
+import { addressNodes } from "../src/locator";
 
 describe("parseHTML", () => {
   it("should parse the doctype", () => {
@@ -122,6 +123,21 @@ describe("parseHTML", () => {
   });
   it("should parse an html file", () => {
     const result = flowFile("tests/testfiles/a.html");
-    console.log(result);
+    expect(result.tags).toHaveLength(1);
+    expect(result.docType?.docType).toBe("html");
+  });
+  it("should verify addresses", () => {
+    const html = "<div><span>Hello</span> World</div>";
+    const elements = flowRaw(html).elements;
+    addressNodes(elements);
+    expect(elements[0].address).toEqual([0]);
+    expect((elements[0] as TFTag).innerTags[0].address).toEqual([0, 0]);
+    expect((elements[0] as TFTag).innerTags[1].address).toEqual([0, 1]);
+    expect(((elements[0] as TFTag).innerTags[1] as TFText).text).toEqual(
+      " World"
+    );
+    expect(
+      ((elements[0] as TFTag).innerTags[0] as TFTag).innerTags[0].address
+    ).toEqual([0, 0, 0]);
   });
 });

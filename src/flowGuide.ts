@@ -98,7 +98,7 @@ export class FlowGuide {
     });
 
     // Nested Elements
-    const nestedElements = this.elements.flatMap((element) => {
+    const nestedElements = this.elements.flatMap((element, i) => {
       if (element.type === "tag") {
         const innerGuide = new FlowGuide((element as TFTag).innerTags);
         const innerFoundElements = innerGuide.q(query).elements;

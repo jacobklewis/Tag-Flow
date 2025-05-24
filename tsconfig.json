@@ -8,7 +8,13 @@
         "outDir": "./dist",
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "allowJs": true,           // <--- important
+        "resolveJsonModule": true, // <--- important
+        "baseUrl": "./",
+        "paths": {
+          "*": ["*", "*.js"]
+        }
     },
     "include": [
       "src/**/*",

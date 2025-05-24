@@ -10,6 +10,7 @@ import {
 } from "./elements.js";
 import { readFileSync } from "fs";
 import { FlowGuide } from "./flowGuide.js";
+import { addressNodes } from "./locator.js";
 
 export const flowFile = (src: string): FlowGuide => {
   const html = readFileSync(src, "utf-8");
@@ -18,7 +19,9 @@ export const flowFile = (src: string): FlowGuide => {
 };
 
 export const flow = (html: string): FlowGuide => {
-  return new FlowGuide(flowRaw(html).elements);
+  const elements = flowRaw(html).elements;
+  addressNodes(elements);
+  return new FlowGuide(elements);
 };
 
 export const flowRaw = (html: string): ParsingResponse => {
@@ -68,6 +71,7 @@ function handleOpenCaret(req: HandlerRequest): HandlerResponse {
     if (buffer.buffer.trim() !== "") {
       elements.push({
         type: TFElementType.TEXT,
+        address: [] as number[],
         text: buffer.buffer,
       } as TFText);
       buffer.buffer = "";
@@ -121,6 +125,7 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
     if (doctype !== "") {
       elements.push({
         type: TFElementType.DOCTYPE,
+        address: [],
         docType: doctype,
       } as TFDocType);
     }
@@ -135,6 +140,7 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
     // console.log("i:", i);
     buffer.currentElement = {
       type: TFElementType.TAG,
+      address: [] as number[],
       name: res.name,
       attributes: res.attributes,
       innerTags: innerResult.elements,
@@ -188,6 +194,7 @@ function handleForwardSlash(req: HandlerRequest): HandlerResponse {
     const res = parseNameAndAttr(buffer.buffer.trim());
     buffer.currentElement = {
       type: TFElementType.TAG,
+      address: [],
       name: res.name,
       attributes: res.attributes,
       innerTags: [],

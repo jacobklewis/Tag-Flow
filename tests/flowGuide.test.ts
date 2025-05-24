@@ -1,5 +1,4 @@
 import { flow, flowFile } from "../src/htmlParser";
-import { FlowGuide } from "../src/flowGuide";
 
 describe("flow guide", () => {
   const testHTML1 =
