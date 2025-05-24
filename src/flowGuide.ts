@@ -1,7 +1,11 @@
 import { TFComment, TFDocType, TFElement, TFTag, TFText } from "./elements.js";
+import { addressNodes } from "./locator.js";
 
 export class FlowGuide {
-  public constructor(private elements: TFElement[]) {}
+  public constructor(
+    private elements: TFElement[],
+    private root: FlowGuide | undefined = undefined
+  ) {}
 
   public get docType(): TFDocType | undefined {
     const docType = this.elements.find(
@@ -122,6 +126,58 @@ export class FlowGuide {
     const uniqueElements = elements.filter(
       (element, index, self) => index === self.findIndex((el) => el === element)
     );
-    return new FlowGuide(uniqueElements);
+    return new FlowGuide(uniqueElements, this.root ?? this);
+  }
+
+  private relocate() {
+    const root = this.root ?? this;
+    addressNodes(root.elements);
+  }
+
+  public addElement(
+    element: TFElement,
+    index: number | undefined = undefined
+  ): void {
+    this.elements.forEach((el, i) => {
+      if (el.type === "tag") {
+        // create copy of element
+        const elementCopy = { ...element, address: [] } as TFElement;
+        const innerTags = (el as TFTag).innerTags;
+        if (index !== undefined) {
+          innerTags.splice(index, 0, elementCopy);
+        } else {
+          innerTags.push(elementCopy);
+        }
+      }
+    });
+    this.relocate();
+  }
+
+  public remove(index: number | undefined = undefined): void {
+    if (index === undefined) {
+      // remove all elements
+      const root = this.root ?? this;
+      this.elements.forEach((el) => {
+        let els = root.elements;
+        el.address.forEach((n, i) => {
+          if (i === el.address.length - 1) {
+            els.splice(n, 1);
+            this.relocate();
+          } else if (els[n].type === "tag") {
+            els = (els[n] as TFTag).innerTags;
+          }
+        });
+      });
+      this.elements = [];
+    } else {
+      // remove element at index
+      this.elements.forEach((el) => {
+        if (el.type === "tag") {
+          const innerTags = (el as TFTag).innerTags;
+          innerTags.splice(index, 1);
+        }
+      });
+    }
+    this.relocate();
   }
 }

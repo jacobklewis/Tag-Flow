@@ -1,3 +1,4 @@
+import { TFText } from "../src/elements";
 import { flow, flowFile } from "../src/htmlParser";
 
 describe("flow guide", () => {
@@ -75,5 +76,49 @@ describe("flow guide", () => {
     expect(results.html).toBe(
       '<h1>The Year of 2025</h1><footer class="center-text">&copy; 2025 Jacob K Lewis</footer>'
     );
+  });
+  it("should add a text element to 2 tags after query", () => {
+    const flowGuide = flow("<div></div><div></div>");
+    const res = flowGuide.q("div");
+    expect(res.tags).toHaveLength(2);
+    res.addElement({
+      type: "text",
+      text: "Hello World",
+    } as TFText);
+    const tags = res.tags;
+    expect(tags[0].innerTags).toHaveLength(1);
+    expect(tags[1].innerTags).toHaveLength(1);
+    expect((tags[0].innerTags[0] as TFText).text).toBe("Hello World");
+    expect((tags[1].innerTags[0] as TFText).text).toBe("Hello World");
+    expect(tags[0].innerTags[0].address).toEqual([0, 0]);
+    expect(tags[1].innerTags[0].address).toEqual([1, 0]);
+  });
+  it("should remove 2 text elements after query", () => {
+    const flowGuide = flow("<div>Hello</div><div>World</div>");
+    const res = flowGuide.q("div");
+    expect(res.tags).toHaveLength(2);
+    expect(res.tags[0].innerTags).toHaveLength(1);
+    expect(res.tags[1].innerTags).toHaveLength(1);
+    expect((res.tags[0].innerTags[0] as TFText).text).toBe("Hello");
+    expect((res.tags[1].innerTags[0] as TFText).text).toBe("World");
+    res.remove(0);
+    expect(res.tags).toHaveLength(2);
+    expect(res.tags[0].innerTags).toHaveLength(0);
+    expect(res.tags[1].innerTags).toHaveLength(0);
+  });
+  it("should remove selected divs from query", () => {
+    const flowGuide = flow(
+      '<div><div class="abc">Hello</div><div class="abc">World</div></div>'
+    );
+    const res = flowGuide.q(".abc");
+    expect(res.tags).toHaveLength(2);
+    expect(res.tags[0].innerTags).toHaveLength(1);
+    expect(res.tags[1].innerTags).toHaveLength(1);
+    expect((res.tags[0].innerTags[0] as TFText).text).toBe("Hello");
+    expect((res.tags[1].innerTags[0] as TFText).text).toBe("World");
+    res.remove();
+    expect(res.tags).toHaveLength(0);
+    expect(flowGuide.tags).toHaveLength(1);
+    expect(flowGuide.tags[0].innerTags).toHaveLength(0);
   });
 });
