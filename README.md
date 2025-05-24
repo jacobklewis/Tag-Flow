@@ -34,6 +34,13 @@ console.log(fl.q("h1").html)
 ```html
 <h1>Hello</h1>
 ```
+```typescript
+fl.q("h1").setName("h3")
+fl.save("new.html");
+```
+```html
+<div><h3>Hello</h3> World!</div>
+```
 
 ### Query by:
 * Tag name

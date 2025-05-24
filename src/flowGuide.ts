@@ -68,6 +68,12 @@ export class FlowGuide {
     return innerHTML;
   }
 
+  public save(fileName: string): FlowGuide {
+    const fs = require("fs");
+    fs.writeFileSync(fileName, this.html);
+    return this;
+  }
+
   /**
    * Deep Query the elements by name, class, id, or text
    * @param query a string to query the elements:
