@@ -60,6 +60,15 @@ export const flowRaw = (html: string): ParsingResponse => {
     }
     i = res.i;
   }
+  if (buffer.buffer.trim() !== "") {
+    // create a text element
+    elements.push({
+      type: TFElementType.TEXT,
+      address: [] as number[],
+      text: buffer.buffer,
+    } as TFText);
+    buffer.buffer = "";
+  }
   return { elements, endingIndex };
 };
 

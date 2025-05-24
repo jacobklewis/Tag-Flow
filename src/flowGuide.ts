@@ -1,4 +1,5 @@
 import { TFComment, TFDocType, TFElement, TFTag, TFText } from "./elements.js";
+import { flow } from "./htmlParser.js";
 import { addressNodes } from "./locator.js";
 
 export class FlowGuide {
@@ -137,7 +138,7 @@ export class FlowGuide {
   public addElement(
     element: TFElement,
     index: number | undefined = undefined
-  ): void {
+  ): FlowGuide {
     this.elements.forEach((el, i) => {
       if (el.type === "tag") {
         // create copy of element
@@ -151,9 +152,10 @@ export class FlowGuide {
       }
     });
     this.relocate();
+    return this;
   }
 
-  public remove(index: number | undefined = undefined): void {
+  public remove(index: number | undefined = undefined): FlowGuide {
     if (index === undefined) {
       // remove all elements
       const root = this.root ?? this;
@@ -170,7 +172,7 @@ export class FlowGuide {
       });
       this.elements = [];
     } else {
-      // remove element at index
+      // remove elements at index for each selected tag
       this.elements.forEach((el) => {
         if (el.type === "tag") {
           const innerTags = (el as TFTag).innerTags;
@@ -179,5 +181,81 @@ export class FlowGuide {
       });
     }
     this.relocate();
+    return index === undefined ? this.root ?? this : this;
+  }
+
+  public removeChildren(): FlowGuide {
+    const maxChildCount = Math.max(
+      ...this.elements.map((el) => {
+        if (el.type === "tag") {
+          return (el as TFTag).innerTags.length;
+        }
+        return 0;
+      })
+    );
+    console.log("maxChildCount", maxChildCount);
+    for (let i = maxChildCount - 1; i >= 0; i--) {
+      this.remove(i);
+    }
+    return this;
+  }
+
+  public attr(name: string, value: string): FlowGuide {
+    this.elements.forEach((el) => {
+      if (el.type === "tag") {
+        (el as TFTag).attributes[name] = value;
+      }
+    });
+    return this;
+  }
+
+  public delAttr(name: string): FlowGuide {
+    this.elements.forEach((el) => {
+      if (el.type === "tag") {
+        delete (el as TFTag).attributes[name];
+      }
+    });
+    return this;
+  }
+
+  public get innerHTML(): string[] {
+    return this.elements.map((element) => {
+      if (element.type === "tag") {
+        const el = element as TFTag;
+        const innerGuide = new FlowGuide(el.innerTags);
+        return innerGuide.html;
+      } else if (element.type === "text") {
+        const el = element as TFText;
+        return el.text;
+      }
+      return "";
+    });
+  }
+  public set innerHTML(v: string) {
+    this.elements.forEach((el) => {
+      if (el.type === "tag") {
+        (el as TFTag).innerTags = flow(v).elements;
+      } else if (el.type === "text") {
+        (el as TFText).text = v;
+      }
+    });
+    this.relocate();
+  }
+  public setInnerHTML(v: string): FlowGuide {
+    this.innerHTML = v;
+    return this;
+  }
+
+  public set name(v: string) {
+    this.elements.forEach((el) => {
+      if (el.type === "tag") {
+        (el as TFTag).name = v;
+      }
+    });
+    this.relocate();
+  }
+  public setName(v: string): FlowGuide {
+    this.name = v;
+    return this;
   }
 }
