@@ -142,17 +142,21 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
   } else if (buffer.status === BufferStatus.TAG_OPEN) {
     buffer.status = BufferStatus.INNER_HTML;
     const res = parseNameAndAttr(buffer.buffer.trim());
-    const remainingString = html.slice(i + 1);
-    const innerResult = flowRaw(remainingString);
-    // console.log("Inner result:", innerResult);
-    i = innerResult.endingIndex + i;
+    let innerElements: TFElement[] = [];
+    if (!VoidTags.includes(res.name.toLowerCase())) {
+      const remainingString = html.slice(i + 1);
+      const innerResult = flowRaw(remainingString);
+      // console.log("Inner result:", innerResult);
+      i = innerResult.endingIndex + i;
+      innerElements = innerResult.elements;
+    }
     // console.log("i:", i);
     buffer.currentElement = {
       type: TFElementType.TAG,
       address: [] as number[],
       name: res.name,
       attributes: res.attributes,
-      innerTags: innerResult.elements,
+      innerTags: innerElements,
     } as TFTag;
     buffer.buffer = "";
     // Check for void tags

@@ -121,10 +121,82 @@ describe("parseHTML", () => {
     const keys = Object.keys(attributes);
     expect(keys).toHaveLength(0);
   });
+  it("should parse void tags with arguments", () => {
+    const html = '<br class="test" id="testId" disable><meta charset="utf-8">';
+    const result = flowRaw(html);
+    expect(result.elements).toHaveLength(2);
+    expect(result.elements[0].type).toBe(TFElementType.TAG);
+    expect((result.elements[0] as TFTag).name).toBe("br");
+    expect((result.elements[0] as TFTag).isVoidTag).toBe(true);
+    const attributes = (result.elements[0] as TFTag).attributes;
+    const keys = Object.keys(attributes);
+    const values = Object.values(attributes);
+    expect(keys).toHaveLength(3);
+    expect(keys[0]).toBe("class");
+    expect(values[0]).toBe("test");
+    expect(keys[1]).toBe("id");
+    expect(values[1]).toBe("testId");
+    expect(keys[2]).toBe("disable");
+    expect(values[2]).toBe("");
+  });
+  it("should parse nested void tags", () => {
+    const html = `<head><meta charset="utf-8">
+    <meta name="theme-color" content="#FBFBFB">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jacob K Lewis</title>
+</head>`;
+    const result = flowRaw(html);
+    expect((result.elements as TFTag[])[0].innerTags).toHaveLength(4);
+    expect((result.elements as TFTag[])[0].name).toBe("head");
+    expect((result.elements as TFTag[])[0].isVoidTag).toBe(false);
+    const innerTags = (result.elements[0] as TFTag).innerTags;
+    expect(innerTags[0].type).toBe(TFElementType.TAG);
+    expect((innerTags[0] as TFTag).name).toBe("meta");
+    expect((innerTags[0] as TFTag).isVoidTag).toBe(true);
+    const attributes = (innerTags[0] as TFTag).attributes;
+    const keys = Object.keys(attributes);
+    const values = Object.values(attributes);
+    expect(keys).toHaveLength(1);
+    expect(keys[0]).toBe("charset");
+    expect(values[0]).toBe("utf-8");
+    expect(innerTags[1].type).toBe(TFElementType.TAG);
+    expect((innerTags[1] as TFTag).name).toBe("meta");
+    expect((innerTags[1] as TFTag).isVoidTag).toBe(true);
+    const attributes2 = (innerTags[1] as TFTag).attributes;
+    const keys2 = Object.keys(attributes2);
+    const values2 = Object.values(attributes2);
+    expect(keys2).toHaveLength(2);
+    expect(keys2[0]).toBe("name");
+    expect(values2[0]).toBe("theme-color");
+    expect(keys2[1]).toBe("content");
+    expect(values2[1]).toBe("#FBFBFB");
+    expect(innerTags[2].type).toBe(TFElementType.TAG);
+    expect((innerTags[2] as TFTag).name).toBe("meta");
+    expect((innerTags[2] as TFTag).isVoidTag).toBe(true);
+    const attributes3 = (innerTags[2] as TFTag).attributes;
+    const keys3 = Object.keys(attributes3);
+    const values3 = Object.values(attributes3);
+    expect(keys3).toHaveLength(2);
+    expect(keys3[0]).toBe("name");
+    expect(values3[0]).toBe("viewport");
+    expect(keys3[1]).toBe("content");
+    expect(values3[1]).toBe("width=device-width, initial-scale=1.0");
+    expect(innerTags[3].type).toBe(TFElementType.TAG);
+    expect((innerTags[3] as TFTag).name).toBe("title");
+    expect((innerTags[3] as TFTag).isVoidTag).toBe(false);
+    const attributes4 = (innerTags[3] as TFTag).attributes;
+    const keys4 = Object.keys(attributes4);
+    expect(keys4).toHaveLength(0);
+    expect((innerTags[3] as TFTag).innerTags).toHaveLength(1);
+    expect((innerTags[3] as TFTag).innerTags[0].type).toBe(TFElementType.TEXT);
+    expect(((innerTags[3] as TFTag).innerTags[0] as TFText).text).toBe(
+      "Jacob K Lewis"
+    );
+  });
   it("should parse an html file", () => {
     const result = flowFile("tests/testfiles/a.html");
-    expect(result.tags).toHaveLength(1);
-    expect(result.docType?.docType).toBe("html");
+    const head = result.q("head");
+    expect(head.tags[0].innerTags).toHaveLength(5);
   });
   it("should verify addresses", () => {
     const html = "<div><span>Hello</span> World</div>";
