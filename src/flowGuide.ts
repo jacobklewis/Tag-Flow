@@ -69,8 +69,9 @@ export class FlowGuide {
     return innerHTML;
   }
 
-  public save(fileName: string): FlowGuide {
-    writeFileSync(fileName, this.html);
+  public save(fileName: string, useRoot: boolean = true): FlowGuide {
+    const root = useRoot ? this.root ?? this : this;
+    writeFileSync(fileName, root.html);
     return this;
   }
 
