@@ -11,7 +11,7 @@ Tag Flow is a simple and resilient HTML parser designed to streamline and enhanc
   - Edit Attributes
   - Edit Inner HTML
   - Edit Tag Names
-- **Bidirectional Parsing**: Transform from and to HTML
+- **Bidirectional Parsing**: Transform both from and to HTML
 
 ## Installation
 
