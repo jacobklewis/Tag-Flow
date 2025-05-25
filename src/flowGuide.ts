@@ -1,6 +1,7 @@
 import { TFComment, TFDocType, TFElement, TFTag, TFText } from "./elements.js";
 import { flow } from "./htmlParser.js";
 import { addressNodes } from "./locator.js";
+import { writeFileSync } from "fs";
 
 export class FlowGuide {
   public constructor(
@@ -69,8 +70,7 @@ export class FlowGuide {
   }
 
   public save(fileName: string): FlowGuide {
-    const fs = require("fs");
-    fs.writeFileSync(fileName, this.html);
+    writeFileSync(fileName, this.html);
     return this;
   }
 
