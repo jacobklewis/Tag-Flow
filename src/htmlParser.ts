@@ -31,8 +31,7 @@ export const flowRaw = (
 ): ParsingResponse => {
   //   console.log("Parsing HTML:", html);
   // parse the html string and return an array of HTMLTag objects
-  html = html.trim();
-  if (html === "") {
+  if (html.trim() === "") {
     return { elements: [], endingIndex: 0 };
   }
   const elements: TFElement[] = [];
@@ -82,7 +81,6 @@ function handleOpenCaret(req: HandlerRequest): HandlerResponse {
   if (req.ext && req.html.indexOf(`</${req.ext}>`, i) !== i) {
     buffer.buffer += char;
   } else if (buffer.status === BufferStatus.START) {
-    // console.log("Tag open", html, i);
     if (buffer.buffer.trim() !== "") {
       elements.push({
         type: TFElementType.TEXT,
@@ -154,6 +152,7 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
         nExt = res.name;
       }
       const remainingString = html.slice(i + 1);
+      console.log("Remaining String for inner tags:", remainingString);
       const innerResult = flowRaw(remainingString, nExt);
       // console.log("Inner result:", innerResult);
       i = innerResult.endingIndex + i;
