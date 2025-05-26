@@ -1,0 +1,55 @@
+import { writeFileSync } from "fs";
+export class TFLogger {
+  private static instance: TFLogger;
+  private logs: string[] = [];
+  private mode: "file" | "console" | "memory" = "memory";
+  private isEnabled: boolean = false;
+
+  private constructor() {}
+
+  public static getInstance(): TFLogger {
+    if (!TFLogger.instance) {
+      TFLogger.instance = new TFLogger();
+    }
+    return TFLogger.instance;
+  }
+
+  public log(message: string, isError: boolean = false): void {
+    if (!this.isEnabled) return;
+    this.logs.push(`${isError ? "ERROR: " : ""}${message}`);
+    if (this.mode === "file") {
+      this.writeToFile();
+    } else if (this.mode === "console") {
+      if (isError) {
+        console.error(message);
+      } else {
+        console.log(message);
+      }
+    }
+  }
+
+  public getLogs(): string[] {
+    if (!this.isEnabled) return [] as string[];
+    return this.logs;
+  }
+
+  public clearLogs(): void {
+    if (!this.isEnabled) return;
+    this.logs = [];
+  }
+
+  public setMode(mode: "file" | "console" | "memory"): void {
+    this.mode = mode;
+  }
+
+  public enable(): void {
+    this.isEnabled = true;
+  }
+  public disable(): void {
+    this.isEnabled = false;
+  }
+
+  public writeToFile(): void {
+    writeFileSync("tagflow.log", this.logs.join("\n"), "utf8");
+  }
+}
