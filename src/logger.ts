@@ -49,7 +49,17 @@ export class TFLogger {
     this.isEnabled = false;
   }
 
-  public writeToFile(): void {
-    writeFileSync("tagflow.log", this.logs.join("\n"), "utf8");
+  public writeToFile(fileName: string = "tagflow.log"): void {
+    writeFileSync(fileName, this.logs.join("\n"), "utf8");
   }
 }
+
+export const xray = (block: () => void, filename: string = "tagflow.log") => {
+  const logger = TFLogger.getInstance();
+  logger.setMode("file");
+  logger.enable();
+  block();
+  logger.writeToFile(filename);
+  logger.clearLogs();
+  logger.disable();
+};

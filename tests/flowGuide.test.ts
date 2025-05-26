@@ -1,7 +1,12 @@
 import { TFTag, TFText } from "../src/elements";
 import { flow, flowFile } from "../src/htmlParser";
+import { TFLogger } from "../src/logger";
 
 describe("flow guide", () => {
+  beforeAll(() => {
+    const logger = TFLogger.getInstance();
+    logger.disable();
+  });
   const testHTML1 =
     '<!DOCTYPE html><h1 id="greeting">Good Day!</h1><div><h2 class="lead">Hello</h2> World</div><!-- my comment -->';
   it("should get all tags", () => {

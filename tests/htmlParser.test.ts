@@ -7,8 +7,13 @@ import {
   TFComment,
 } from "../src/elements";
 import { addressNodes } from "../src/locator";
+import { TFLogger, xray } from "../src/logger";
 
 describe("parseHTML", () => {
+  beforeAll(() => {
+    const logger = TFLogger.getInstance();
+    logger.disable();
+  });
   it("should parse the doctype", () => {
     const html = "<!DOCTYPE html>";
     const result = flowRaw(html);
@@ -222,14 +227,10 @@ describe("parseHTML", () => {
   it("should parse html with many whitespace characters", () => {
     const html = `<div><div>    <p></p></div><div></div></div>`;
     const result = flowRaw(html);
-    console.log(
-      ((result.elements[0] as TFTag).innerTags[0] as TFTag).innerTags
-    );
     expect(result.elements).toHaveLength(1);
     expect(result.elements[0].type).toBe(TFElementType.TAG);
     expect((result.elements[0] as TFTag).name).toBe("div");
     const innerTags = (result.elements[0] as TFTag).innerTags;
-    console.log(innerTags);
     expect(innerTags).toHaveLength(2);
     expect(innerTags[0].type).toBe(TFElementType.TAG);
     expect((innerTags[0] as TFTag).name).toBe("div");
