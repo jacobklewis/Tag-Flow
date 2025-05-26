@@ -200,7 +200,6 @@ export class FlowGuide {
         return 0;
       })
     );
-    console.log("maxChildCount", maxChildCount);
     for (let i = maxChildCount - 1; i >= 0; i--) {
       this.remove(i);
     }

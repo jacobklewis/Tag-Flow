@@ -41,3 +41,5 @@ export const VoidTags = [
   "track",
   "wbr",
 ];
+
+export const ExtensionTags = ["style", "script"];

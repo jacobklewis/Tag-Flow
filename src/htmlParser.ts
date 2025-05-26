@@ -1,5 +1,6 @@
 import { BufferState, BufferStatus } from "./buffer.js";
 import {
+  ExtensionTags,
   TFComment,
   TFDocType,
   TFElement,
@@ -24,7 +25,10 @@ export const flow = (html: string): FlowGuide => {
   return new FlowGuide(elements);
 };
 
-export const flowRaw = (html: string): ParsingResponse => {
+export const flowRaw = (
+  html: string,
+  ext: string | undefined = undefined
+): ParsingResponse => {
   //   console.log("Parsing HTML:", html);
   // parse the html string and return an array of HTMLTag objects
   html = html.trim();
@@ -42,15 +46,15 @@ export const flowRaw = (html: string): ParsingResponse => {
     const char = html[i];
     let res: HandlerResponse = { endingIndex: undefined, i };
     if (char === "<") {
-      res = handleOpenCaret({ buffer, char, i, html, elements });
+      res = handleOpenCaret({ buffer, char, i, html, elements, ext });
     } else if (char === ">") {
-      res = handleCloseCaret({ buffer, char, i, html, elements });
+      res = handleCloseCaret({ buffer, char, i, html, elements, ext });
     } else if (char === "/") {
-      res = handleForwardSlash({ buffer, char, i, html, elements });
+      res = handleForwardSlash({ buffer, char, i, html, elements, ext });
     } else if (char === '"') {
-      res = handleDoubleQuote({ buffer, char, i, html, elements });
+      res = handleDoubleQuote({ buffer, char, i, html, elements, ext });
     } else if (char === "'") {
-      res = handleSingleQuote({ buffer, char, i, html, elements });
+      res = handleSingleQuote({ buffer, char, i, html, elements, ext });
     } else {
       buffer.buffer += char;
     }
@@ -75,7 +79,9 @@ export const flowRaw = (html: string): ParsingResponse => {
 function handleOpenCaret(req: HandlerRequest): HandlerResponse {
   let i = req.i;
   const { char, buffer, elements, html } = req;
-  if (buffer.status === BufferStatus.START) {
+  if (req.ext && req.html.indexOf(`</${req.ext}>`, i) !== i) {
+    buffer.buffer += char;
+  } else if (buffer.status === BufferStatus.START) {
     // console.log("Tag open", html, i);
     if (buffer.buffer.trim() !== "") {
       elements.push({
@@ -115,10 +121,9 @@ function handleOpenCaret(req: HandlerRequest): HandlerResponse {
     buffer.status === BufferStatus.TAG_OPEN ||
     buffer.status === BufferStatus.TAG_CLOSE
   ) {
-    throw new Error("Unexpected < character");
+    throw new Error(`Unexpected < character: ${buffer.status}`);
   } else if (buffer.status === BufferStatus.INNER_HTML) {
     buffer.status = BufferStatus.TAG_CLOSE;
-    // console.log("Tag close");
     buffer.buffer = "";
   } else {
     buffer.buffer += char;
@@ -144,8 +149,12 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
     const res = parseNameAndAttr(buffer.buffer.trim());
     let innerElements: TFElement[] = [];
     if (!VoidTags.includes(res.name.toLowerCase())) {
+      let nExt = undefined;
+      if (ExtensionTags.includes(res.name.toLowerCase())) {
+        nExt = res.name;
+      }
       const remainingString = html.slice(i + 1);
-      const innerResult = flowRaw(remainingString);
+      const innerResult = flowRaw(remainingString, nExt);
       // console.log("Inner result:", innerResult);
       i = innerResult.endingIndex + i;
       innerElements = innerResult.elements;
@@ -274,6 +283,7 @@ interface HandlerRequest {
   i: number;
   html: string;
   elements: TFElement[];
+  ext?: string | undefined;
 }
 interface HandlerResponse {
   endingIndex: number | undefined;

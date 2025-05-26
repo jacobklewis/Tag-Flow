@@ -198,6 +198,18 @@ describe("parseHTML", () => {
     const head = result.q("head");
     expect(head.tags[0].innerTags).toHaveLength(5);
   });
+  it("should parse an html file with inline styles", () => {
+    const result = flowFile("tests/testfiles/b.html");
+    const styleTags = result.q("style");
+    expect(styleTags.tags).toHaveLength(1);
+    expect(styleTags.tags[0].innerTags).toHaveLength(1);
+  });
+  it("should parse an html file with inline script", () => {
+    const result = flowFile("tests/testfiles/c.html");
+    const styleTags = result.q("script");
+    expect(styleTags.tags).toHaveLength(1);
+    expect(styleTags.tags[0].innerTags).toHaveLength(1);
+  });
   it("should verify addresses", () => {
     const html = "<div><span>Hello</span> World</div>";
     const elements = flowRaw(html).elements;
