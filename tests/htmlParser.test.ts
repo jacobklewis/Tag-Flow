@@ -210,6 +210,32 @@ describe("parseHTML", () => {
     expect(styleTags.tags).toHaveLength(1);
     expect(styleTags.tags[0].innerTags).toHaveLength(1);
   });
+  it("should parse an html file with nested malformed <a></b> tags", () => {
+    const result = flowFile("tests/testfiles/d.html");
+    const divTags = result.q("body");
+    expect(divTags.tags).toHaveLength(1);
+    expect(divTags.tags[0].innerTags).toHaveLength(3);
+    const flour = result.q("*Flour");
+    expect(flour.tags).toHaveLength(1);
+    expect(flour.tags[0].name).toBe("h3"); // the h3 tag is the parent of the text "Flour" with a closing tag of </h2>
+  });
+  it("should parse html with many whitespace characters", () => {
+    const html = `<div><div>    <p></p></div><div></div></div>`;
+    const result = flowRaw(html);
+    console.log(
+      ((result.elements[0] as TFTag).innerTags[0] as TFTag).innerTags
+    );
+    expect(result.elements).toHaveLength(1);
+    expect(result.elements[0].type).toBe(TFElementType.TAG);
+    expect((result.elements[0] as TFTag).name).toBe("div");
+    const innerTags = (result.elements[0] as TFTag).innerTags;
+    console.log(innerTags);
+    expect(innerTags).toHaveLength(2);
+    expect(innerTags[0].type).toBe(TFElementType.TAG);
+    expect((innerTags[0] as TFTag).name).toBe("div");
+    expect(innerTags[1].type).toBe(TFElementType.TAG);
+    expect((innerTags[1] as TFTag).name).toBe("div");
+  });
   it("should verify addresses", () => {
     const html = "<div><span>Hello</span> World</div>";
     const elements = flowRaw(html).elements;
