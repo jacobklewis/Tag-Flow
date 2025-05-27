@@ -4,6 +4,7 @@ export class TFLogger {
   private logs: string[] = [];
   private mode: "file" | "console" | "memory" = "memory";
   private isEnabled: boolean = false;
+  private breakpointKey: string = "~";
 
   private constructor() {}
 
@@ -47,6 +48,18 @@ export class TFLogger {
   }
   public disable(): void {
     this.isEnabled = false;
+  }
+
+  public setBreakpointKey(key: string): void {
+    this.breakpointKey = key;
+  }
+
+  public getBreakpointKey(): string {
+    return this.breakpointKey;
+  }
+
+  public get enabled(): boolean {
+    return this.isEnabled;
   }
 
   public writeToFile(fileName: string = "tagflow.log"): void {
