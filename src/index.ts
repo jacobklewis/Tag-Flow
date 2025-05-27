@@ -8,3 +8,4 @@ export {
   TFDocType,
 } from "./elements.js";
 export { FlowGuide } from "./flowGuide.js";
+export { TFLogger, xray, sxray, exray } from "./logger.js";
