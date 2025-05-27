@@ -55,11 +55,13 @@ export const flowRaw = (
     const char = html[i];
     let res: HandlerResponse = { endingIndex: undefined, i };
     if (tfl.enabled && char === tfl.getBreakpointKey()) {
-      tfl.log(`Breakpoint ${char} hit at index ${i}, pausing execution.`);
+      tfl.log(
+        `==================\nBreakpoint ${char} hit at index ${i}, pausing execution.`
+      );
       tfl.log(`Current buffer: "${buffer.buffer}"`);
       tfl.log(`Current status: ${buffer.status}`);
       tfl.log(`Current elements count: ${elements.length}`);
-      tfl.log(`Current body being processed: ${html}`);
+      tfl.log(`Current body being processed: ${html}\n==================`);
     }
     if (char === "<") {
       res = handleOpenCaret({ buffer, char, i, html, elements, ext });
