@@ -72,8 +72,7 @@ export const flowRaw = (
     } else if (char === "'") {
       res = handleSingleQuote({ buffer, char, i, html, elements, ext });
     } else {
-      tfl.log(`Adding character to buffer: "${char}" at index ${i}`);
-      buffer.buffer += char;
+      addingCharacterToBuffer(buffer, char, i);
     }
     if (res.endingIndex !== undefined) {
       endingIndex = res.endingIndex;
@@ -152,8 +151,7 @@ function handleOpenCaret(req: HandlerRequest): HandlerResponse {
     buffer.status = BufferStatus.TAG_CLOSE;
     buffer.buffer = "";
   } else {
-    tfl.log(`Adding character to buffer: "${char}" at index ${i}`);
-    buffer.buffer += char;
+    addingCharacterToBuffer(buffer, char, i);
   }
   return { endingIndex: undefined, i };
 }
@@ -242,12 +240,10 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
       buffer.status = BufferStatus.START;
       buffer.buffer = "";
     } else {
-      tfl.log(`Adding character to buffer: "${char}" at index ${i}`);
-      buffer.buffer += char;
+      addingCharacterToBuffer(buffer, char, i);
     }
   } else {
-    tfl.log(`Adding character to buffer: "${char}" at index ${i}`);
-    buffer.buffer += char;
+    addingCharacterToBuffer(buffer, char, i);
   }
   return { endingIndex: undefined, i };
 }
@@ -271,8 +267,7 @@ function handleForwardSlash(req: HandlerRequest): HandlerResponse {
     buffer.status = BufferStatus.TAG_COMPLETE;
     buffer.buffer = "";
   } else {
-    tfl.log(`Adding character to buffer: "${char}" at index ${i}`);
-    buffer.buffer += char;
+    addingCharacterToBuffer(buffer, char, i);
   }
   return { endingIndex: undefined, i: req.i };
 }
@@ -287,8 +282,7 @@ function handleDoubleQuote(req: HandlerRequest): HandlerResponse {
     buffer.status = BufferStatus.TAG_OPEN;
     buffer.buffer += char;
   } else {
-    tfl.log(`Adding character to buffer: "${char}" at index ${i}`);
-    buffer.buffer += char;
+    addingCharacterToBuffer(buffer, char, i);
   }
   return { endingIndex: undefined, i: req.i };
 }
@@ -303,8 +297,7 @@ function handleSingleQuote(req: HandlerRequest): HandlerResponse {
     buffer.status = BufferStatus.TAG_OPEN;
     buffer.buffer += char;
   } else {
-    tfl.log(`Adding character to buffer: "${char}" at index ${i}`);
-    buffer.buffer += char;
+    addingCharacterToBuffer(buffer, char, i);
   }
   return { endingIndex: undefined, i: req.i };
 }
@@ -325,6 +318,22 @@ function parseNameAndAttr(buffer: string): {
     `Parsed tag name: "${name}" with attributes: ${JSON.stringify(attributes)}`
   );
   return { name, attributes };
+}
+
+function addingCharacterToBuffer(
+  buffer: BufferState,
+  char: string,
+  i: number
+): BufferState {
+  let charToLog = char;
+  if (charToLog === "\n") {
+    charToLog = "\\n"; // Log newline as \n for clarity
+  } else if (charToLog === "\t") {
+    charToLog = "\\t"; // Log tab as \t for clarity
+  }
+  tfl.log(`Adding character to buffer: "${charToLog}" at index ${i}`);
+  buffer.buffer += char;
+  return buffer;
 }
 
 export interface ParsingResponse {

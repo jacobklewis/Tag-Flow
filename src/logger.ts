@@ -1,3 +1,4 @@
+import { log } from "console";
 import { writeFileSync } from "fs";
 export class TFLogger {
   private static instance: TFLogger;
@@ -72,6 +73,21 @@ export const xray = (block: () => void, filename: string = "tagflow.log") => {
   logger.setMode("file");
   logger.enable();
   block();
+  logger.writeToFile(filename);
+  logger.clearLogs();
+  logger.disable();
+};
+
+export const sxray = (breakpoint: string = "~") => {
+  const logger = TFLogger.getInstance();
+  logger.enable();
+  logger.clearLogs();
+  logger.setMode("memory");
+  logger.setBreakpointKey(breakpoint);
+};
+
+export const exray = (filename: string = "tagflow.log") => {
+  const logger = TFLogger.getInstance();
   logger.writeToFile(filename);
   logger.clearLogs();
   logger.disable();
