@@ -55,7 +55,7 @@ export const flowRaw = (
     const char = html[i];
     let res: HandlerResponse = { endingIndex: undefined, i };
     if (tfl.enabled && char === tfl.getBreakpointKey()) {
-      tfl.log(`Breakpoint hit at index ${i}, pausing execution.`);
+      tfl.log(`Breakpoint ${char} hit at index ${i}, pausing execution.`);
       tfl.log(`Current buffer: "${buffer.buffer}"`);
       tfl.log(`Current status: ${buffer.status}`);
       tfl.log(`Current elements count: ${elements.length}`);
@@ -189,7 +189,7 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
       i = innerResult.endingIndex + i;
       innerElements = innerResult.elements;
       tfl.log(
-        `Parsed inner tags for ${res.name}: ${innerElements.length} elements.`
+        `Parsed inner tags for ${res.name}: ${JSON.stringify(innerElements)}.`
       );
     }
     tfl.log(`Creating tag element: ${res.name} ending at index ${i}`);

@@ -210,9 +210,7 @@ describe("parseHTML", () => {
     expect(styleTags.tags[0].innerTags).toHaveLength(1);
   });
   it("should parse an html file with inline script", () => {
-    sxray();
     const result = flowFile("tests/testfiles/c.html");
-    exray();
     const styleTags = result.q("script");
     expect(styleTags.tags).toHaveLength(1);
     expect(styleTags.tags[0].innerTags).toHaveLength(1);
