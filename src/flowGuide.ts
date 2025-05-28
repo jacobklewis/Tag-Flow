@@ -1,4 +1,11 @@
-import { TFComment, TFDocType, TFElement, TFTag, TFText } from "./elements.js";
+import {
+  TFComment,
+  TFDocType,
+  TFElement,
+  TFPlaceholder,
+  TFTag,
+  TFText,
+} from "./elements.js";
 import { flow } from "./htmlParser.js";
 import { addressNodes } from "./locator.js";
 import { writeFileSync } from "fs";
@@ -62,7 +69,15 @@ export class FlowGuide {
         } else if (element.type === "text") {
           const el = element as TFText;
           return el.text;
+        } else if (element.type === "placeholder") {
+          const el = element as TFPlaceholder;
+          if (el.value !== undefined) {
+            return `${el.value}`;
+          } else {
+            return `{{${el.key}}}`;
+          }
         }
+
         return "";
       })
       .join("");
@@ -262,6 +277,25 @@ export class FlowGuide {
   }
   public setName(v: string): FlowGuide {
     this.name = v;
+    return this;
+  }
+
+  public populatePlaceholder(key: string, value: string): FlowGuide {
+    // search whole tree for placeholder with key
+    this.elements.forEach((el) => {
+      if (el.type === "placeholder") {
+        const placeholder = el as TFPlaceholder;
+        if (placeholder.key === key) {
+          placeholder.value = value;
+        }
+      } else if (el.type === "tag") {
+        const innerGuide = new FlowGuide(
+          (el as TFTag).innerTags,
+          this.root ?? this
+        );
+        innerGuide.populatePlaceholder(key, value);
+      }
+    });
     return this;
   }
 }

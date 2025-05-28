@@ -2,18 +2,19 @@ import { TFElement } from "./elements";
 
 export interface BufferState {
   buffer: string;
-  status: BufferStatus;
+  status: BufferStatus[];
   currentElement: TFElement | null;
 }
 
 export enum BufferStatus {
-  START,
-  TAG_OPEN,
-  TAG_OPEN_SINGLE_QUOTE,
-  TAG_OPEN_DOUBLE_QUOTE,
-  TAG_CLOSE,
-  TAG_COMPLETE,
-  INNER_HTML,
-  COMMENT,
-  DOCTYPE,
+  START = "START",
+  TAG_OPEN = "TAG_OPEN",
+  TAG_CLOSE = "TAG_CLOSE",
+  TAG_COMPLETE = "TAG_COMPLETE",
+  INNER_HTML = "INNER_HTML",
+  COMMENT = "COMMENT",
+  DOCTYPE = "DOCTYPE",
+  PLACEHOLDER = "PLACEHOLDER",
+  SINGLE_QUOTE = "SINGLE_QUOTE",
+  DOUBLE_QUOTE = "DOUBLE_QUOTE",
 }

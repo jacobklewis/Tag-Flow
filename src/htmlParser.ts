@@ -5,6 +5,7 @@ import {
   TFDocType,
   TFElement,
   TFElementType,
+  TFPlaceholder,
   TFTag,
   TFText,
   VoidTags,
@@ -47,7 +48,7 @@ export const flowRaw = (
   const elements: TFElement[] = [];
   const buffer: BufferState = {
     buffer: "",
-    status: BufferStatus.START,
+    status: [BufferStatus.START],
     currentElement: null,
   };
   let endingIndex = 0;
@@ -73,6 +74,10 @@ export const flowRaw = (
       res = handleDoubleQuote({ buffer, char, i, html, elements, ext });
     } else if (char === "'") {
       res = handleSingleQuote({ buffer, char, i, html, elements, ext });
+    } else if (char === "{") {
+      res = handlePlaceholderOpen({ buffer, char, i, html, elements, ext });
+    } else if (char === "}") {
+      res = handlePlaceholderClose({ buffer, char, i, html, elements, ext });
     } else {
       addingCharacterToBuffer(buffer, char, i);
     }
@@ -102,17 +107,9 @@ function handleOpenCaret(req: HandlerRequest): HandlerResponse {
       `Extension tag <${req.ext}> not found at index ${i}, treating as text.`
     );
     buffer.buffer += char;
-  } else if (buffer.status === BufferStatus.START) {
+  } else if (buffer.status[0] === BufferStatus.START) {
     tfl.log(`Handling open caret at index ${i}`);
-    if (buffer.buffer.trim() !== "") {
-      tfl.log(`Buffer not empty, creating text element: "${buffer.buffer}"`);
-      elements.push({
-        type: TFElementType.TEXT,
-        address: [] as number[],
-        text: buffer.buffer,
-      } as TFText);
-      buffer.buffer = "";
-    }
+    createTextElement(buffer, elements, i);
     const nextChar = html[i + 1];
     const nextX2Char = html[i + 2];
     const nextX3Char = html[i + 3];
@@ -127,7 +124,7 @@ function handleOpenCaret(req: HandlerRequest): HandlerResponse {
     if (nextChar === "!" && nextX2Char === "-" && nextX3Char === "-") {
       tfl.log(`Found comment at index ${i}`);
       // Comment
-      buffer.status = BufferStatus.COMMENT;
+      buffer.status = [BufferStatus.COMMENT];
       buffer.buffer = "";
       i += 3; // Skip the <!--
       return { i } as HandlerResponse;
@@ -135,22 +132,22 @@ function handleOpenCaret(req: HandlerRequest): HandlerResponse {
     if (nextChar === "!" && nextX2Char === "D" && nextX3Char === "O") {
       tfl.log(`Found doctype at index ${i}`);
       // Doctype
-      buffer.status = BufferStatus.DOCTYPE;
+      buffer.status = [BufferStatus.DOCTYPE];
       buffer.buffer = "";
       i += 8; // Skip the <!DOCTYPE
       return { i } as HandlerResponse;
     }
-    buffer.status = BufferStatus.TAG_OPEN;
+    buffer.status = [BufferStatus.TAG_OPEN];
     buffer.buffer = "";
   } else if (
-    buffer.status === BufferStatus.TAG_OPEN ||
-    buffer.status === BufferStatus.TAG_CLOSE
+    buffer.status[0] === BufferStatus.TAG_OPEN ||
+    buffer.status[0] === BufferStatus.TAG_CLOSE
   ) {
     tfl.log(`Unexpected < character at index ${i}`, true);
     throw new Error(`Unexpected < character: ${buffer.status}`);
-  } else if (buffer.status === BufferStatus.INNER_HTML) {
+  } else if (buffer.status[0] === BufferStatus.INNER_HTML) {
     tfl.log(`Ending inner HTML at index ${i}`);
-    buffer.status = BufferStatus.TAG_CLOSE;
+    buffer.status = [BufferStatus.TAG_CLOSE];
     buffer.buffer = "";
   } else {
     addingCharacterToBuffer(buffer, char, i);
@@ -160,8 +157,8 @@ function handleOpenCaret(req: HandlerRequest): HandlerResponse {
 function handleCloseCaret(req: HandlerRequest): HandlerResponse {
   let i = req.i;
   const { char, buffer, elements, html } = req;
-  if (buffer.status === BufferStatus.DOCTYPE) {
-    buffer.status = BufferStatus.START;
+  if (buffer.status[0] === BufferStatus.DOCTYPE) {
+    buffer.status = [BufferStatus.START];
     const doctype = buffer.buffer.trim();
     tfl.log(`Creating doctype at index ${i} with value: "${doctype}"`);
     if (doctype !== "") {
@@ -172,8 +169,8 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
       } as TFDocType);
     }
     buffer.buffer = "";
-  } else if (buffer.status === BufferStatus.TAG_OPEN) {
-    buffer.status = BufferStatus.INNER_HTML;
+  } else if (buffer.status[0] === BufferStatus.TAG_OPEN) {
+    buffer.status = [BufferStatus.INNER_HTML];
     const res = parseNameAndAttr(buffer.buffer.trim());
     let innerElements: TFElement[] = [];
     if (!VoidTags.includes(res.name.toLowerCase())) {
@@ -209,11 +206,11 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
       (buffer.currentElement as TFTag).isVoidTag = true;
       elements.push(buffer.currentElement);
       buffer.currentElement = null;
-      buffer.status = BufferStatus.START;
+      buffer.status = [BufferStatus.START];
     }
-  } else if (buffer.status === BufferStatus.TAG_COMPLETE) {
+  } else if (buffer.status[0] === BufferStatus.TAG_COMPLETE) {
     tfl.log(`Handling tag complete at index ${i}`);
-    buffer.status = BufferStatus.START;
+    buffer.status = [BufferStatus.START];
     if (buffer.currentElement) {
       if (
         buffer.currentElement.type === TFElementType.TAG &&
@@ -226,7 +223,7 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
     }
     buffer.currentElement = null;
     buffer.buffer = "";
-  } else if (buffer.status === BufferStatus.COMMENT) {
+  } else if (buffer.status[0] === BufferStatus.COMMENT) {
     const lastChar = html[i - 1];
     const lastX2Char = html[i - 2];
     if (lastChar === "-" && lastX2Char === "-") {
@@ -239,7 +236,7 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
           comment: comment,
         } as TFComment);
       }
-      buffer.status = BufferStatus.START;
+      buffer.status = [BufferStatus.START];
       buffer.buffer = "";
     } else {
       addingCharacterToBuffer(buffer, char, i);
@@ -251,9 +248,9 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
 }
 function handleForwardSlash(req: HandlerRequest): HandlerResponse {
   const { char, buffer, i } = req;
-  if (buffer.status === BufferStatus.TAG_OPEN) {
+  if (buffer.status[0] === BufferStatus.TAG_OPEN) {
     tfl.log(`Handling explicit void tag at index ${i}`);
-    buffer.status = BufferStatus.TAG_COMPLETE;
+    buffer.status = [BufferStatus.TAG_COMPLETE];
     const res = parseNameAndAttr(buffer.buffer.trim());
     buffer.currentElement = {
       type: TFElementType.TAG,
@@ -264,9 +261,9 @@ function handleForwardSlash(req: HandlerRequest): HandlerResponse {
       isVoidTag: true,
     } as TFTag;
     buffer.buffer = "";
-  } else if (buffer.status === BufferStatus.TAG_CLOSE) {
+  } else if (buffer.status[0] === BufferStatus.TAG_CLOSE) {
     tfl.log(`Handling closing tag at index ${i}`);
-    buffer.status = BufferStatus.TAG_COMPLETE;
+    buffer.status = [BufferStatus.TAG_COMPLETE];
     buffer.buffer = "";
   } else {
     addingCharacterToBuffer(buffer, char, i);
@@ -275,13 +272,13 @@ function handleForwardSlash(req: HandlerRequest): HandlerResponse {
 }
 function handleDoubleQuote(req: HandlerRequest): HandlerResponse {
   const { char, buffer, i } = req;
-  if (buffer.status === BufferStatus.TAG_OPEN) {
+  if (buffer.status[0] === BufferStatus.TAG_OPEN) {
     tfl.log(`Starting double quote at index ${i}`);
-    buffer.status = BufferStatus.TAG_OPEN_DOUBLE_QUOTE;
+    buffer.status.unshift(BufferStatus.DOUBLE_QUOTE);
     buffer.buffer += char;
-  } else if (buffer.status === BufferStatus.TAG_OPEN_DOUBLE_QUOTE) {
+  } else if (buffer.status[0] === BufferStatus.DOUBLE_QUOTE) {
     tfl.log(`Ending double quote at index ${i}`);
-    buffer.status = BufferStatus.TAG_OPEN;
+    buffer.status.shift();
     buffer.buffer += char;
   } else {
     addingCharacterToBuffer(buffer, char, i);
@@ -290,19 +287,78 @@ function handleDoubleQuote(req: HandlerRequest): HandlerResponse {
 }
 function handleSingleQuote(req: HandlerRequest): HandlerResponse {
   const { char, buffer, i } = req;
-  if (buffer.status === BufferStatus.TAG_OPEN) {
+  if (buffer.status[0] === BufferStatus.TAG_OPEN) {
     tfl.log(`Starting single quote at index ${i}`);
-    buffer.status = BufferStatus.TAG_OPEN_SINGLE_QUOTE;
+    buffer.status.unshift(BufferStatus.SINGLE_QUOTE);
     buffer.buffer += char;
-  } else if (buffer.status === BufferStatus.TAG_OPEN_SINGLE_QUOTE) {
+  } else if (buffer.status[0] === BufferStatus.SINGLE_QUOTE) {
     tfl.log(`Ending single quote at index ${i}`);
-    buffer.status = BufferStatus.TAG_OPEN;
+    buffer.status.shift();
     buffer.buffer += char;
   } else {
     addingCharacterToBuffer(buffer, char, i);
   }
   return { endingIndex: undefined, i: req.i };
 }
+function handlePlaceholderOpen(req: HandlerRequest): HandlerResponse {
+  const { char, buffer, html } = req;
+  let i = req.i;
+  const nextChar = html[i + 1];
+  if (buffer.status[0] === BufferStatus.START && nextChar === "{") {
+    createTextElement(buffer, req.elements, i);
+    tfl.log(`Handling placeholder open at index ${i}`);
+    buffer.status.unshift(BufferStatus.PLACEHOLDER);
+    i += 1; // Skip the {
+    buffer.buffer = ""; // Clear the buffer for placeholder content
+  } else {
+    addingCharacterToBuffer(buffer, char, i);
+  }
+  return { endingIndex: undefined, i };
+}
+
+function handlePlaceholderClose(req: HandlerRequest): HandlerResponse {
+  const { char, buffer, html } = req;
+  let i = req.i;
+  const nextChar = html[i + 1];
+  if (buffer.status[0] === BufferStatus.PLACEHOLDER && nextChar === "}") {
+    tfl.log(`Handling placeholder close at index ${i}`);
+    buffer.status.shift(); // Remove PLACEHOLDER status
+    const placeholder = buffer.buffer.trim();
+    if (placeholder !== "") {
+      tfl.log(`Creating placeholder element: "${placeholder}" at index ${i}`);
+      const placeholderElement: TFPlaceholder = {
+        type: TFElementType.PLACEHOLDER,
+        address: [],
+        key: placeholder,
+        value: undefined, // Placeholder value can be set later
+      };
+      // Add the placeholder element to the elements array
+      req.elements.push(placeholderElement);
+    }
+    i += 1; // Skip the }
+    buffer.buffer = ""; // Clear the buffer after creating the placeholder
+  } else {
+    addingCharacterToBuffer(buffer, char, i);
+  }
+  return { endingIndex: undefined, i };
+}
+
+function createTextElement(
+  buffer: BufferState,
+  elements: TFElement[],
+  i: number
+): void {
+  if (buffer.buffer.trim() !== "") {
+    tfl.log(`Buffer not empty, creating text element: "${buffer.buffer}"`);
+    elements.push({
+      type: TFElementType.TEXT,
+      address: [] as number[],
+      text: buffer.buffer,
+    } as TFText);
+    buffer.buffer = "";
+  }
+}
+
 function parseNameAndAttr(buffer: string): {
   name: string;
   attributes: { [key: string]: string };

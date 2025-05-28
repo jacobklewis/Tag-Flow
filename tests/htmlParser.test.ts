@@ -5,6 +5,7 @@ import {
   TFDocType,
   TFText,
   TFComment,
+  TFPlaceholder,
 } from "../src/elements";
 import { addressNodes } from "../src/locator";
 import { exray, sxray, TFLogger, xray } from "../src/logger";
@@ -250,5 +251,20 @@ describe("parseHTML", () => {
     expect(
       ((elements[0] as TFTag).innerTags[0] as TFTag).innerTags[0].address
     ).toEqual([0, 0, 0]);
+  });
+  it("should parse a simple HTML string with a placeholder", () => {
+    const html = "<div>{{placeholder}}</div>";
+    sxray();
+    const result = flowRaw(html);
+    exray();
+    expect(result.elements).toHaveLength(1);
+    expect(result.elements[0].type).toBe(TFElementType.TAG);
+    expect((result.elements[0] as TFTag).name).toBe("div");
+    expect((result.elements[0] as TFTag).isVoidTag).toBe(false);
+    const innerTags = (result.elements[0] as TFTag).innerTags;
+    expect(innerTags).toHaveLength(1);
+    expect(innerTags[0].type).toBe(TFElementType.PLACEHOLDER);
+    expect((innerTags[0] as TFPlaceholder).key).toBe("placeholder");
+    expect((innerTags[0] as TFPlaceholder).value).toBeUndefined();
   });
 });
