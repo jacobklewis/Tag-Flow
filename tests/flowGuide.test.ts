@@ -246,4 +246,15 @@ describe("flow guide", () => {
       '<div><h1 class="abc">Hello</h1><h1 class="abc"><b>World</b></h1></div>'
     );
   });
+  it("should parse a placeholder and print it out the same, unmodified", () => {
+    const flowGuide = flow("<div>{{name}}</div>");
+    const html = flowGuide.html;
+    expect(html).toBe("<div>{{name}}</div>");
+  });
+  it("should parse a placeholder and print out it's associated value", () => {
+    const flowGuide = flow("<div>{{name}}</div>");
+    flowGuide.populatePlaceholder("name", "Jacob");
+    const html = flowGuide.html;
+    expect(html).toBe("<div>Jacob</div>");
+  });
 });
