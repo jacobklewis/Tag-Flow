@@ -17,12 +17,17 @@ export interface TFComment extends TFElement {
 export interface TFDocType extends TFElement {
   docType: string;
 }
+export interface TFPlaceholder extends TFElement {
+  key: string;
+  value: string | undefined;
+}
 
 export const TFElementType = {
   TEXT: "text",
   TAG: "tag",
   COMMENT: "comment",
   DOCTYPE: "doctype",
+  PLACEHOLDER: "placeholder",
 };
 
 export const VoidTags = [
