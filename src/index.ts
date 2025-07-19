@@ -9,3 +9,4 @@ export {
 } from "./elements.js";
 export { FlowGuide } from "./flowGuide.js";
 export { TFLogger, xray, sxray, exray } from "./logger.js";
+export { FlowBuilder } from "./flowBuilder.js";
