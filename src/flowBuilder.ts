@@ -6,9 +6,8 @@ import {
   TFPlaceholder,
   TFTag,
   TFText,
-} from "./elements";
-import { FlowGuide } from "./flowGuide";
-
+} from "./elements.js";
+import { FlowGuide } from "./flowGuide.js";
 export class FlowBuilder {
   private elements: TFElement[] = [];
 
