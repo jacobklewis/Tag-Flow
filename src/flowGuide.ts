@@ -2,6 +2,7 @@ import {
   TFComment,
   TFDocType,
   TFElement,
+  TFElementType,
   TFPlaceholder,
   TFTag,
   TFText,
@@ -18,21 +19,21 @@ export class FlowGuide {
 
   public get docType(): TFDocType | undefined {
     const docType = this.elements.find(
-      (element) => element.type === "doctype"
+      (element) => element.type === TFElementType.DOCTYPE
     ) as TFDocType;
     return docType;
   }
 
   public get tags(): TFTag[] {
     const tags = this.elements.filter(
-      (element) => element.type === "tag"
+      (element) => element.type === TFElementType.TAG
     ) as TFTag[];
     return tags;
   }
 
   public get comments(): TFComment[] {
     const comments = this.elements.filter(
-      (element) => element.type === "comment"
+      (element) => element.type === TFElementType.COMMENT
     ) as TFComment[];
     return comments;
   }
@@ -40,7 +41,7 @@ export class FlowGuide {
   public get html(): string {
     const innerHTML = this.elements
       .map((element) => {
-        if (element.type === "tag") {
+        if (element.type === TFElementType.TAG) {
           const el = element as TFTag;
           let attrStr = Object.entries(el.attributes)
             .map(([key, value]) => {
@@ -60,16 +61,16 @@ export class FlowGuide {
           }
           const innerHTML = innerGuide.html;
           return `<${el.name}${attrStr}>${innerHTML}</${el.name}>`;
-        } else if (element.type === "comment") {
+        } else if (element.type === TFElementType.COMMENT) {
           const el = element as TFComment;
           return `<!-- ${el.comment} -->`;
-        } else if (element.type === "doctype") {
+        } else if (element.type === TFElementType.DOCTYPE) {
           const el = element as TFDocType;
           return `<!DOCTYPE ${el.docType}>`;
-        } else if (element.type === "text") {
+        } else if (element.type === TFElementType.TEXT) {
           const el = element as TFText;
           return el.text;
-        } else if (element.type === "placeholder") {
+        } else if (element.type === TFElementType.PLACEHOLDER) {
           const el = element as TFPlaceholder;
           if (el.value !== undefined) {
             return `${el.value}`;
@@ -104,38 +105,42 @@ export class FlowGuide {
       if (query.startsWith("#")) {
         const id = query.slice(1);
         return (
-          element.type === "tag" && (element as TFTag).attributes.id === id
+          element.type === TFElementType.TAG &&
+          (element as TFTag).attributes.id === id
         );
       } else if (query.startsWith(".")) {
         const className = query.slice(1);
         return (
-          element.type === "tag" &&
+          element.type === TFElementType.TAG &&
           (element as TFTag).attributes.class?.split(" ")?.includes(className)
         );
       } else if (query.startsWith("*")) {
         const text = query.slice(1);
         return (
-          element.type === "text" &&
+          element.type === TFElementType.TEXT &&
           (element as TFText).text.toLowerCase().indexOf(text.toLowerCase()) !==
             -1
         );
       } else {
-        return element.type === "tag" && (element as TFTag).name === query;
+        return (
+          element.type === TFElementType.TAG &&
+          (element as TFTag).name === query
+        );
       }
     });
 
     // Nested Elements
     const nestedElements = this.elements.flatMap((element, i) => {
-      if (element.type === "tag") {
+      if (element.type === TFElementType.TAG) {
         const innerGuide = new FlowGuide((element as TFTag).innerTags);
         const innerFoundElements = innerGuide.q(query).elements;
         // If inner element is Text, return this element and remove the text element
         const textElements = innerFoundElements.filter(
-          (el) => el.type === "text"
+          (el) => el.type === TFElementType.TEXT
         ) as TFText[];
         if (textElements.length > 0) {
           const textlessElements = innerFoundElements.filter(
-            (el) => el.type !== "text"
+            (el) => el.type !== TFElementType.TEXT
           ) as TFElement[];
           return [element, ...textlessElements];
         }
@@ -162,7 +167,7 @@ export class FlowGuide {
     index: number | undefined = undefined
   ): FlowGuide {
     this.elements.forEach((el, i) => {
-      if (el.type === "tag") {
+      if (el.type === TFElementType.TAG) {
         // create copy of element
         const elementCopy = { ...element, address: [] } as TFElement;
         const innerTags = (el as TFTag).innerTags;
@@ -187,7 +192,7 @@ export class FlowGuide {
           if (i === el.address.length - 1) {
             els.splice(n, 1);
             this.relocate();
-          } else if (els[n].type === "tag") {
+          } else if (els[n].type === TFElementType.TAG) {
             els = (els[n] as TFTag).innerTags;
           }
         });
@@ -196,7 +201,7 @@ export class FlowGuide {
     } else {
       // remove elements at index for each selected tag
       this.elements.forEach((el) => {
-        if (el.type === "tag") {
+        if (el.type === TFElementType.TAG) {
           const innerTags = (el as TFTag).innerTags;
           innerTags.splice(index, 1);
         }
@@ -209,7 +214,7 @@ export class FlowGuide {
   public removeChildren(): FlowGuide {
     const maxChildCount = Math.max(
       ...this.elements.map((el) => {
-        if (el.type === "tag") {
+        if (el.type === TFElementType.TAG) {
           return (el as TFTag).innerTags.length;
         }
         return 0;
@@ -223,7 +228,7 @@ export class FlowGuide {
 
   public attr(name: string, value: string): FlowGuide {
     this.elements.forEach((el) => {
-      if (el.type === "tag") {
+      if (el.type === TFElementType.TAG) {
         (el as TFTag).attributes[name] = value;
       }
     });
@@ -232,7 +237,7 @@ export class FlowGuide {
 
   public delAttr(name: string): FlowGuide {
     this.elements.forEach((el) => {
-      if (el.type === "tag") {
+      if (el.type === TFElementType.TAG) {
         delete (el as TFTag).attributes[name];
       }
     });
@@ -241,11 +246,11 @@ export class FlowGuide {
 
   public get innerHTML(): string[] {
     return this.elements.map((element) => {
-      if (element.type === "tag") {
+      if (element.type === TFElementType.TAG) {
         const el = element as TFTag;
         const innerGuide = new FlowGuide(el.innerTags);
         return innerGuide.html;
-      } else if (element.type === "text") {
+      } else if (element.type === TFElementType.TEXT) {
         const el = element as TFText;
         return el.text;
       }
@@ -254,9 +259,9 @@ export class FlowGuide {
   }
   public set innerHTML(v: string) {
     this.elements.forEach((el) => {
-      if (el.type === "tag") {
+      if (el.type === TFElementType.TAG) {
         (el as TFTag).innerTags = flow(v).elements;
-      } else if (el.type === "text") {
+      } else if (el.type === TFElementType.TEXT) {
         (el as TFText).text = v;
       }
     });
@@ -269,7 +274,7 @@ export class FlowGuide {
 
   public set name(v: string) {
     this.elements.forEach((el) => {
-      if (el.type === "tag") {
+      if (el.type === TFElementType.TAG) {
         (el as TFTag).name = v;
       }
     });
@@ -283,12 +288,12 @@ export class FlowGuide {
   public populatePlaceholder(key: string, value: string): FlowGuide {
     // search whole tree for placeholder with key
     this.elements.forEach((el) => {
-      if (el.type === "placeholder") {
+      if (el.type === TFElementType.PLACEHOLDER) {
         const placeholder = el as TFPlaceholder;
         if (placeholder.key === key) {
           placeholder.value = value;
         }
-      } else if (el.type === "tag") {
+      } else if (el.type === TFElementType.TAG) {
         const innerGuide = new FlowGuide(
           (el as TFTag).innerTags,
           this.root ?? this
