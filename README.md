@@ -1,17 +1,17 @@
 # Tag Flow
 
-Tag Flow is a simple and resilient HTML parser designed to streamline and enhance your web development workflow. This repository provides tools, utilities, and best practices to help developers efficiently parse and manipulate HTML content.
+Tag Flow is a simple and resilient HTML/XML parser designed to streamline and enhance your web development workflow. This repository provides tools, utilities, and best practices to help developers efficiently parse and manipulate HTML/XML content.
 
 ## Features
 
-- **Resilient Parsing**: Handles malformed or complex HTML gracefully.
-- **Streamlined Workflow**: Simplifies HTML parsing and manipulation tasks.
+- **Resilient Parsing**: Handles malformed or complex HTML/XML gracefully.
+- **Streamlined Workflow**: Simplifies HTML/XML parsing and manipulation tasks.
   - Query
   - Edit Elements
   - Edit Attributes
-  - Edit Inner HTML
+  - Edit Inner HTML/XML
   - Edit Tag Names
-- **Bidirectional Parsing**: Transform both from and to HTML
+- **Bidirectional Parsing**: Transform both from and to HTML/XML
 
 ## Installation
 

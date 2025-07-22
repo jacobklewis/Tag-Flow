@@ -26,18 +26,19 @@ export const flowFile = (src: string): FlowGuide => {
   return result;
 };
 
-export const flow = (html: string): FlowGuide => {
+export const flow = (content: string): FlowGuide => {
   tfl.log(`\n--- Flow ---`);
-  const elements = flowRaw(html).elements;
+  const elements = flowRaw(content).elements;
   addressNodes(elements);
 
   return new FlowGuide(elements);
 };
 
 export const flowRaw = (
-  html: string,
+  content: string,
   ext: string | undefined = undefined
 ): ParsingResponse => {
+  const html = content;
   tfl.log(`\n--- FlowRaw ---`);
   tfl.log(`Parsing string of length: ${html.length}`);
   tfl.log(`Extension: ${ext ?? "None"}`);
