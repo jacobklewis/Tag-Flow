@@ -84,4 +84,9 @@ export class FlowBuilder {
     const guide = new FlowGuide(this.elements);
     return guide.html;
   }
+
+  public get xml(): string {
+    const guide = new FlowGuide(this.elements);
+    return guide.xml;
+  }
 }

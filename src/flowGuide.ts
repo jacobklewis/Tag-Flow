@@ -3,6 +3,7 @@ import {
   TFDocType,
   TFElement,
   TFElementType,
+  TFHeader,
   TFPlaceholder,
   TFTag,
   TFText,
@@ -67,6 +68,11 @@ export class FlowGuide {
         } else if (element.type === TFElementType.DOCTYPE) {
           const el = element as TFDocType;
           return `<!DOCTYPE ${el.docType}>`;
+        } else if (element.type === TFElementType.HEADER) {
+          const el = element as TFHeader;
+          const v = el.version ? ` version="${el.version}"` : "";
+          const e = el.encoding ? ` encoding="${el.encoding}"` : "";
+          return `<?${el.name}${v}${e}?>`;
         } else if (element.type === TFElementType.TEXT) {
           const el = element as TFText;
           return el.text;
@@ -83,6 +89,10 @@ export class FlowGuide {
       })
       .join("");
     return innerHTML;
+  }
+
+  public get xml(): string {
+    return this.html;
   }
 
   public save(fileName: string, useRoot: boolean = true): FlowGuide {

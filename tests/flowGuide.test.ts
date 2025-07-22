@@ -257,4 +257,26 @@ describe("flow guide", () => {
     const html = flowGuide.html;
     expect(html).toBe("<div>Jacob</div>");
   });
+  it("Should parse an xml file correctly", () => {
+    const flowGuide = flow(
+      '<?xml version="1.0" encoding="utf-8"?><packages><package id="AutoMapper" version="2.2.1" targetFramework="net462" /><package id="EntityFramework" version="6.4.0" targetFramework="net462" /></packages>'
+    );
+    const xml = flowGuide.xml;
+    expect(xml).toBe(
+      '<?xml version="1.0" encoding="utf-8"?><packages><package id="AutoMapper" version="2.2.1" targetFramework="net462"/><package id="EntityFramework" version="6.4.0" targetFramework="net462"/></packages>'
+    );
+  });
+  it("Should parse an xml file and get packages", () => {
+    const flowGuide = flow(
+      '<?xml version="1.0" encoding="utf-8"?><packages><package id="AutoMapper" version="2.2.1" targetFramework="net462" /><package id="EntityFramework" version="6.4.0" targetFramework="net462" /></packages>'
+    );
+    const packages = flowGuide.q("package");
+    expect(packages.tags).toHaveLength(2);
+    expect(packages.tags[0].attributes.id).toBe("AutoMapper");
+    expect(packages.tags[0].attributes.version).toBe("2.2.1");
+    expect(packages.tags[0].attributes.targetFramework).toBe("net462");
+    expect(packages.tags[1].attributes.id).toBe("EntityFramework");
+    expect(packages.tags[1].attributes.version).toBe("6.4.0");
+    expect(packages.tags[1].attributes.targetFramework).toBe("net462");
+  });
 });
