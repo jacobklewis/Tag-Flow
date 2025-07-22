@@ -5,6 +5,7 @@ import {
   TFDocType,
   TFElement,
   TFElementType,
+  TFHeader,
   TFPlaceholder,
   TFTag,
   TFText,
@@ -38,9 +39,9 @@ export const flowRaw = (
   ext: string | undefined = undefined
 ): ParsingResponse => {
   tfl.log(`\n--- FlowRaw ---`);
-  tfl.log(`Parsing HTML string of length: ${html.length}`);
+  tfl.log(`Parsing string of length: ${html.length}`);
   tfl.log(`Extension: ${ext ?? "None"}`);
-  // parse the html string and return an array of HTMLTag objects
+  // parse the string and return an array of HTMLTag objects
   if (html.trim() === "") {
     tfl.log("Empty HTML string, returning empty elements.");
     return { elements: [], endingIndex: 0 };
@@ -135,6 +136,14 @@ function handleOpenCaret(req: HandlerRequest): HandlerResponse {
       buffer.status = [BufferStatus.DOCTYPE];
       buffer.buffer = "";
       i += 8; // Skip the <!DOCTYPE
+      return { i } as HandlerResponse;
+    }
+    if (nextChar === "?") {
+      tfl.log(`Found XML header at index ${i}`);
+      // XML Header
+      buffer.status = [BufferStatus.HEADER];
+      buffer.buffer = "";
+      i += 1; // Skip the <?
       return { i } as HandlerResponse;
     }
     buffer.status = [BufferStatus.TAG_OPEN];
@@ -235,6 +244,21 @@ function handleCloseCaret(req: HandlerRequest): HandlerResponse {
           type: TFElementType.COMMENT,
           comment: comment,
         } as TFComment);
+      }
+      buffer.status = [BufferStatus.START];
+      buffer.buffer = "";
+    } else {
+      addingCharacterToBuffer(buffer, char, i);
+    }
+  } else if (buffer.status[0] === BufferStatus.HEADER) {
+    const lastChar = html[i - 1];
+    if (lastChar === "?") {
+      tfl.log(`Creating XML header element at index ${i}`);
+      // XML Header
+      // remove `?` from end
+      const headerParsed = parseHeader(buffer.buffer.slice(0, -1).trim());
+      if (headerParsed) {
+        elements.push(headerParsed);
       }
       buffer.status = [BufferStatus.START];
       buffer.buffer = "";
@@ -376,6 +400,36 @@ function parseNameAndAttr(buffer: string): {
     `Parsed tag name: "${name}" with attributes: ${JSON.stringify(attributes)}`
   );
   return { name, attributes };
+}
+
+function parseHeader(header: string): TFHeader | undefined {
+  const match = header.match(
+    /^(.*?)\s+version="([^"]+)"(?:\s+encoding="([^"]+)")?$|^(.*)$/
+  );
+  if (match) {
+    if (match[1]) {
+      tfl.log(
+        `Parsed header: name="${match[1]} version="${match[2]}", encoding="${match[3]}"`
+      );
+      return {
+        type: TFElementType.HEADER,
+        name: match[1],
+        version: match[2],
+        encoding: match[3],
+        address: [],
+      };
+    } else {
+      tfl.log(`Parsed header: name="${match[4]}"`);
+      return {
+        type: TFElementType.HEADER,
+        name: match[4],
+        version: undefined,
+        encoding: undefined,
+        address: [],
+      };
+    }
+  }
+  return undefined;
 }
 
 function addingCharacterToBuffer(

@@ -17,6 +17,11 @@ export interface TFComment extends TFElement {
 export interface TFDocType extends TFElement {
   docType: string;
 }
+export interface TFHeader extends TFElement {
+  name: string;
+  version: string | undefined;
+  encoding: string | undefined;
+}
 export interface TFPlaceholder extends TFElement {
   key: string;
   value: string | undefined;
@@ -27,6 +32,7 @@ export const TFElementType = {
   TAG: "tag",
   COMMENT: "comment",
   DOCTYPE: "doctype",
+  HEADER: "header",
   PLACEHOLDER: "placeholder",
 };
 
