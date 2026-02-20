@@ -8,12 +8,13 @@ import {
   TFText,
 } from "./elements.js";
 import { FlowGuide } from "./flowGuide.js";
+import { flowRaw } from "./htmlParser.js";
 export class FlowBuilder {
   private elements: TFElement[] = [];
 
   public tag(
     tag: Partial<TFTag>,
-    block: ((builder: FlowBuilder) => void) | undefined = undefined
+    block: ((builder: FlowBuilder) => void) | undefined = undefined,
   ): FlowBuilder {
     if (!tag.name) {
       throw new Error("Tag name is required");
@@ -73,6 +74,12 @@ export class FlowBuilder {
       value,
     };
     this.elements.push(element);
+    return this;
+  }
+
+  public raw(html: string): FlowBuilder {
+    const parsed = flowRaw(html);
+    this.elements.push(...parsed.elements);
     return this;
   }
 
